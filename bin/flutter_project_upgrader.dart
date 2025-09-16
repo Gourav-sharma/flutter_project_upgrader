@@ -5,7 +5,7 @@ void main(List<String> args) {
 }
 
 // import 'dart:io';
-// import 'package:flutter_project_upgrader/upgrader.dart';
+// import 'package:flutter_project_upgrader/flutter_project_upgrader.dart';
 //
 // void main(List<String> args) {
 //   if (args.isEmpty) {

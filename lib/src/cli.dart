@@ -1,4 +1,4 @@
-import '../upgrader.dart';
+import '../flutter_project_upgrader.dart';
 
 void runCli(List<String> arguments) {
   final upgrader = ProjectUpgrader();
