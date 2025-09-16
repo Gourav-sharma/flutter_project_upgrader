@@ -1,0 +1,23 @@
+name: flutter_project_upgrader
+description: "A CLI tool to upgrade old Flutter projects (Gradle, Kotlin, iOS Podfile, etc.)"
+version: 0.0.1
+homepage:
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+  flutter: ">=3.3.0"
+
+executables:
+  flutter_project_upgrader:
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+# no plugin section needed, since this is Dart-only
