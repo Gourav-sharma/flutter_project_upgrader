@@ -34,7 +34,13 @@ dev_dependencies:
 ```
 
 ```usage
-flutter pub run flutter_project_upgrader:upgrade --gradle 7.5.0 --agp 7.2.0 --kotlin 1.8.22 --ios 16.0 --swift 5.7 --pods
+dart run flutter_project_upgrader upgrade --targetSdk 36 or anyother
+
+target support
+32
+34
+35
+36
 ```
 
 ```
