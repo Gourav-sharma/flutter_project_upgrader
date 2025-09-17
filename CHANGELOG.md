@@ -2,3 +2,6 @@
 
 - Initial release
 
+## 0.0.2
+
+- Now just pass targetSdk and it will resolve NDK version automatically and update it in build.gradle

@@ -1,428 +1,241 @@
-// import 'dart:developer';
-// import 'dart:io';
-//
-// class ProjectUpgrader {
-//   void check() {
-//     log("Checking project versions...");
-//     // TODO: parse current versions if you want to show
-//   }
-//
-//   void upgradeFromArgs(List<String> args) {
-//     String? gradle;
-//     String? agp;
-//     String? kotlin;
-//     String? ios;
-//     String? swift;
-//     bool updatePods = false;
-//
-//     for (int i = 0; i < args.length; i++) {
-//       switch (args[i]) {
-//         case '--gradle':
-//           gradle = args[i + 1];
-//           i++;
-//           break;
-//         case '--agp':
-//           agp = args[i + 1];
-//           i++;
-//           break;
-//         case '--kotlin':
-//           kotlin = args[i + 1];
-//           i++;
-//           break;
-//         case '--ios':
-//           ios = args[i + 1];
-//           i++;
-//           break;
-//         case '--swift':
-//           swift = args[i + 1];
-//           i++;
-//           break;
-//         case '--pods':
-//           updatePods = true;
-//           break;
-//       }
-//     }
-//
-//     performUpgrade(
-//       gradle: gradle,
-//       agp: agp,
-//       kotlin: kotlin,
-//       ios: ios,
-//       swift: swift,
-//       pods: updatePods,
-//     );
-//   }
-//
-//   void performUpgrade({
-//     String? gradle,
-//     String? agp,
-//     String? kotlin,
-//     String? ios,
-//     String? swift,
-//     bool pods = false,
-//   }) {
-//     print("🔧 Performing upgrade...");
-//
-//     if (gradle != null || agp != null || kotlin != null) {
-//       upgradeAndroid(
-//         gradleVersion: gradle,
-//         agpVersion: agp,
-//         kotlinVersion: kotlin,
-//       );
-//     }
-//
-//     if (ios != null || swift != null || pods) {
-//       upgradeIOS(
-//         iosVersion: ios,
-//         swiftVersion: swift,
-//         updatePods: pods,
-//       );
-//     }
-//   }
-//
-//   // ---------------- ANDROID ----------------
-//   void upgradeAndroid({
-//     String? gradleVersion,
-//     String? agpVersion,
-//     String? kotlinVersion,
-//   }) {
-//     print("⚡ Upgrading Android...");
-//
-//     // gradle-wrapper.properties
-//     if (gradleVersion != null) {
-//       final gradleFile =
-//       File('android/gradle/wrapper/gradle-wrapper.properties');
-//       if (gradleFile.existsSync()) {
-//         var content = gradleFile.readAsStringSync();
-//         content = content.replaceAllMapped(
-//           RegExp(r'distributionUrl=.*gradle-[\d.]+-all.zip'),
-//               (match) =>
-//           'distributionUrl=https\\://services.gradle.org/distributions/gradle-$gradleVersion-all.zip',
-//         );
-//         gradleFile.writeAsStringSync(content);
-//         print("✅ Gradle updated to $gradleVersion");
-//       }
-//     }
-//
-//     // build.gradle (project level)
-//     final buildFile = File('android/build.gradle');
-//     if (buildFile.existsSync()) {
-//       var content = buildFile.readAsStringSync();
-//
-//       if (agpVersion != null) {
-//         content = content.replaceAllMapped(
-//           RegExp(r'com.android.tools.build:gradle:[\d.]+'),
-//               (match) => 'com.android.tools.build:gradle:$agpVersion',
-//         );
-//         print("✅ AGP (build.gradle) updated to $agpVersion");
-//       }
-//
-//       if (kotlinVersion != null) {
-//         content = content.replaceAllMapped(
-//           RegExp("ext\\.kotlin_version\\s*=\\s*[\"'][0-9.]+[\"']"),
-//               (match) => 'ext.kotlin_version = "$kotlinVersion"',
-//         );
-//         print("✅ Kotlin (build.gradle) updated to $kotlinVersion");
-//       }
-//
-//       buildFile.writeAsStringSync(content);
-//     }
-//
-//     // settings.gradle (plugins)
-//     final settingsFile = File('android/settings.gradle');
-//     if (settingsFile.existsSync()) {
-//       var content = settingsFile.readAsStringSync();
-//
-//       if (agpVersion != null) {
-//         content = content.replaceAllMapped(
-//           RegExp(r'id\s+"com\.android\.application"\s+version\s+"[\d.]+"'),
-//               (match) => 'id "com.android.application" version "$agpVersion"',
-//         );
-//         content = content.replaceAllMapped(
-//           RegExp(r'id\s+"com\.android\.library"\s+version\s+"[\d.]+"'),
-//               (match) => 'id "com.android.library" version "$agpVersion"',
-//         );
-//         print("✅ AGP (settings.gradle) updated to $agpVersion");
-//       }
-//
-//       if (kotlinVersion != null) {
-//         content = content.replaceAllMapped(
-//           RegExp(
-//               r'id\s+"org\.jetbrains\.kotlin\.android"\s+version\s+"[\d.]+"'),
-//               (match) =>
-//           'id "org.jetbrains.kotlin.android" version "$kotlinVersion"',
-//         );
-//         print("✅ Kotlin (settings.gradle) updated to $kotlinVersion");
-//       }
-//
-//       settingsFile.writeAsStringSync(content);
-//     }
-//   }
-//
-//   // ---------------- IOS ----------------
-//   void upgradeIOS({
-//     String? iosVersion,
-//     String? swiftVersion,
-//     bool updatePods = false,
-//   }) {
-//     print("⚡ Upgrading iOS...");
-//
-//     // Podfile
-//     if (iosVersion != null) {
-//       final podFile = File('ios/Podfile');
-//       if (podFile.existsSync()) {
-//         var content = podFile.readAsStringSync();
-//         content = content.replaceAllMapped(
-//           RegExp(r"platform :ios, '\d+(\.\d+)?'"),
-//               (match) => "platform :ios, '$iosVersion'",
-//         );
-//         podFile.writeAsStringSync(content);
-//         print("✅ iOS platform updated to $iosVersion");
-//       }
-//     }
-//
-//     // Swift version in project.pbxproj
-//     if (swiftVersion != null) {
-//       final pbxFile = File('ios/Runner.xcodeproj/project.pbxproj');
-//       if (pbxFile.existsSync()) {
-//         var content = pbxFile.readAsStringSync();
-//         content = content.replaceAllMapped(
-//           RegExp(r'SWIFT_VERSION = [\d.]+;'),
-//               (match) => 'SWIFT_VERSION = $swiftVersion;',
-//         );
-//         pbxFile.writeAsStringSync(content);
-//         print("✅ Swift updated to $swiftVersion");
-//       }
-//     }
-//
-//     if (updatePods) {
-//       if (Platform.isMacOS) {
-//         print("📦 Running pod install...");
-//         final result =
-//         Process.runSync('pod', ['install'], workingDirectory: 'ios');
-//         if (result.exitCode == 0) {
-//           print("✅ Pods installed successfully");
-//         } else {
-//           print("❌ pod install failed:\n${result.stderr}");
-//         }
-//       } else {
-//         print("ℹ️ Skipping pod install (only available on macOS)");
-//       }
-//     }
-//   }
-// }
-
-
-import 'dart:developer';
 import 'dart:io';
 
 class ProjectUpgrader {
-  void check() {
-    log("Checking project versions...");
-    // TODO: parse current versions if you want to show
-  }
+  /// Compatibility matrix
+  final Map<String, Map<String, String>> sdkMatrix = {
+    "32": {
+      "gradle": "7.5",
+      "agp": "7.3.1",
+      "kotlin": "1.7.20",
+      "ndk": "23.1.7779620",
+      "ios": "15.0",
+      "swift": "5.7"
+    },
+    "34": {
+      "gradle": "8.5",
+      "agp": "8.5.2",
+      "kotlin": "1.9.25",
+      "ndk": "26.1.10909125",
+      "ios": "16.0",
+      "swift": "5.9"
+    },
+    "35": {
+      "gradle": "8.7",
+      "agp": "8.7.1",
+      "kotlin": "2.0.20",
+      "ndk": "26.1.10909125",
+      "ios": "17.0",
+      "swift": "5.9"
+    },
+    "36": {
+      "gradle": "8.11.1",
+      "agp": "8.9.0",
+      "kotlin": "2.0.20",
+      "ndk": "28.0.12674049",
+      "ios": "17.0",
+      "swift": "6.0"
+    }
+  };
 
-  void upgradeFromArgs(List<String> args) {
-    String? gradle;
-    String? agp;
-    String? kotlin;
-    String? ios;
-    String? swift;
-    bool updatePods = false;
-
-    for (int i = 0; i < args.length; i++) {
-      switch (args[i]) {
-        case '--gradle':
-          gradle = args[i + 1];
-          i++;
-          break;
-        case '--agp':
-          agp = args[i + 1];
-          i++;
-          break;
-        case '--kotlin':
-          kotlin = args[i + 1];
-          i++;
-          break;
-        case '--ios':
-          ios = args[i + 1];
-          i++;
-          break;
-        case '--swift':
-          swift = args[i + 1];
-          i++;
-          break;
-        case '--pods':
-          updatePods = true;
-          break;
-      }
+  /// Main upgrade entry
+  void upgradeProject(String targetSdk, {bool updatePods = false}) {
+    if (!sdkMatrix.containsKey(targetSdk)) {
+      print("❌ Unsupported targetSdk $targetSdk. Supported: ${sdkMatrix.keys.join(', ')}");
+      return;
     }
 
-    performUpgrade(
-      gradle: gradle,
-      agp: agp,
-      kotlin: kotlin,
-      ios: ios,
-      swift: swift,
-      pods: updatePods,
-    );
-  }
+    final versions = sdkMatrix[targetSdk]!;
+    print("🚀 Upgrading project to targetSdk $targetSdk ...");
+    final ndk = _resolveNdk(targetSdk);
 
-  void performUpgrade({
-    String? gradle,
-    String? agp,
-    String? kotlin,
-    String? ios,
-    String? swift,
-    bool pods = false,
-  }) {
-    print("🔧 Performing upgrade...");
-
-    if (gradle != null || agp != null || kotlin != null) {
-      upgradeAndroid(
-        gradleVersion: gradle,
-        agpVersion: agp,
-        kotlinVersion: kotlin,
-      );
-    }
-
-    if (ios != null || swift != null || pods) {
-      upgradeIOS(
-        iosVersion: ios,
-        swiftVersion: swift,
-        updatePods: pods,
-      );
-    }
-  }
-
-  // ---------------- ANDROID ----------------
-  void upgradeAndroid({
-    String? gradleVersion,
-    String? agpVersion,
-    String? kotlinVersion,
-  }) {
-    print("⚡ Upgrading Android...");
-
-    // gradle-wrapper.properties
-    if (gradleVersion != null) {
-      final gradleFile =
-      File('android/gradle/wrapper/gradle-wrapper.properties');
-      if (gradleFile.existsSync()) {
-        var content = gradleFile.readAsStringSync();
-        content = content.replaceAllMapped(
-          RegExp(r'distributionUrl=.*gradle-[\d.]+-all.zip'),
-              (match) =>
-          'distributionUrl=https\\://services.gradle.org/distributions/gradle-$gradleVersion-all.zip',
-        );
-        gradleFile.writeAsStringSync(content);
-        print("✅ Gradle updated to $gradleVersion");
-      }
-    }
-
-    // build.gradle (project level)
-    final buildFile = File('android/build.gradle');
-    if (buildFile.existsSync()) {
-      var content = buildFile.readAsStringSync();
-
-      if (agpVersion != null) {
-        content = content.replaceAllMapped(
-          RegExp(r'com.android.tools.build:gradle:[\d.]+'),
-              (match) => 'com.android.tools.build:gradle:$agpVersion',
-        );
-        print("✅ AGP (build.gradle) updated to $agpVersion");
-      }
-
-      if (kotlinVersion != null) {
-        content = content.replaceAllMapped(
-          RegExp(r'id\s+"com\.android\.library"\s+version\s+"[\d.]+"'),
-              (match) => 'ext.kotlin_version = "$kotlinVersion"',
-        );
-        print("✅ Kotlin (build.gradle) updated to $kotlinVersion");
-      }
-
-      buildFile.writeAsStringSync(content);
-    }
-
-    // settings.gradle (plugins)
-    final settingsFile = File('android/settings.gradle');
-    if (settingsFile.existsSync()) {
-      var content = settingsFile.readAsStringSync();
-
-      if (agpVersion != null) {
-        // Update com.android.application
-        content = content.replaceAllMapped(
-          RegExp(r'id\s+"com\.android\.application"\s+version\s+"[\d.]+"'),
-              (match) => 'id "com.android.application" version "$agpVersion"',
-        );
-        // Update com.android.library
-        content = content.replaceAllMapped(
-          RegExp(r'id\s+"com\.android\.library"\s+version\s+"[\d.]+"'),
-              (match) => 'id "com.android.library" version "$agpVersion"',
-        );
-        print("✅ AGP (settings.gradle) updated to $agpVersion");
-      }
-
-      if (kotlinVersion != null) {
-        content = content.replaceAllMapped(
-          RegExp(r'id\s+"org\.jetbrains\.kotlin\.android"\s+version\s+"[\d.]+"'),
-              (match) => 'id "org.jetbrains.kotlin.android" version "$kotlinVersion"',
-        );
-        print("✅ Kotlin (settings.gradle) updated to $kotlinVersion");
-      }
-
-      settingsFile.writeAsStringSync(content);
-    }
-  }
-
-  // ---------------- IOS ----------------
-  void upgradeIOS({
-    String? iosVersion,
-    String? swiftVersion,
-    bool updatePods = false,
-  }) {
-    print("⚡ Upgrading iOS...");
-
-    // Podfile
-    if (iosVersion != null) {
-      final podFile = File('ios/Podfile');
-      if (podFile.existsSync()) {
-        var content = podFile.readAsStringSync();
-        content = content.replaceAllMapped(
-          RegExp(r"platform :ios, '\d+(\.\d+)?'"),
-              (match) => "platform :ios, '$iosVersion'",
-        );
-        podFile.writeAsStringSync(content);
-        print("✅ iOS platform updated to $iosVersion");
-      }
-    }
-
-    // Swift version in project.pbxproj
-    if (swiftVersion != null) {
-      final pbxFile = File('ios/Runner.xcodeproj/project.pbxproj');
-      if (pbxFile.existsSync()) {
-        var content = pbxFile.readAsStringSync();
-        content = content.replaceAllMapped(
-          RegExp(r'SWIFT_VERSION = [\d.]+;'),
-              (match) => 'SWIFT_VERSION = $swiftVersion;',
-        );
-        pbxFile.writeAsStringSync(content);
-        print("✅ Swift updated to $swiftVersion");
-      }
-    }
+    _updateGradleWrapper(versions['gradle']!);
+    _updateBuildGradle(versions['agp']!, versions['kotlin']!);
+    _updateSettingsGradle(versions['agp']!, versions['kotlin']!);
+    _updateAppGradle(targetSdk, ndk);
+    _updateIos(versions['ios']!, versions['swift']!);
 
     if (updatePods) {
-      if (Platform.isMacOS) {
-        print("📦 Running pod install...");
-        final result =
-        Process.runSync('pod', ['install'], workingDirectory: 'ios');
-        if (result.exitCode == 0) {
-          print("✅ Pods installed successfully");
-        } else {
-          print("❌ pod install failed:\n${result.stderr}");
-        }
+      _runPodInstall();
+    }
+
+    print("✅ Upgrade completed for targetSdk $targetSdk.");
+  }
+
+  /// --- ANDROID PART ---
+
+  void _updateGradleWrapper(String gradle) {
+    final gradleWrapper = File("android/gradle/wrapper/gradle-wrapper.properties");
+    if (gradleWrapper.existsSync()) {
+      var content = gradleWrapper.readAsStringSync();
+      content = content.replaceAll(
+        RegExp(r'distributionUrl\s*=.*'),
+        'distributionUrl=https\\://services.gradle.org/distributions/gradle-$gradle-all.zip',
+      );
+      gradleWrapper.writeAsStringSync(content);
+      print("✅ Updated Gradle Wrapper → $gradle");
+    }
+  }
+
+  void _updateBuildGradle(String agp, String kotlin) {
+    final gradleFile = File("android/build.gradle");
+    if (gradleFile.existsSync()) {
+      var content = gradleFile.readAsStringSync();
+
+      // AGP
+      content = content.replaceAll(
+        RegExp(r'com\.android\.tools\.build:gradle:[\d.]+'),
+        'com.android.tools.build:gradle:$agp',
+      );
+
+      // Kotlin ext
+      content = content.replaceAll(
+          RegExp(r'id\s+"com\.android\.application"\s+version\s+"[\d.]+"'),
+          'ext.kotlin_version = "$kotlin"',
+          );
+
+          gradleFile.writeAsStringSync(content);
+      print("✅ Updated AGP → $agp, Kotlin → $kotlin (build.gradle)");
+    }
+  }
+
+  void _updateSettingsGradle(String agp, String kotlin) {
+    final settingsGradle = File("android/settings.gradle");
+    if (settingsGradle.existsSync()) {
+      var content = settingsGradle.readAsStringSync();
+
+      // Kotlin JVM plugin
+      content = content.replaceAll(
+        RegExp(r'kotlin\("jvm"\)\s*version\s*".*?"'),
+        'kotlin("jvm") version "$kotlin"',
+      );
+
+      // Kotlin Android plugin
+      content = content.replaceAll(
+        RegExp(r'id\s*\(?\s*"org\.jetbrains\.kotlin\.android"\s*\)?\s*version\s*".*?"'),
+        'id("org.jetbrains.kotlin.android") version "$kotlin"',
+      );
+
+      // Android application plugin
+      content = content.replaceAll(
+        RegExp(r'id\s*\(?\s*"com\.android\.application"\s*\)?\s*version\s*".*?"'),
+        'id("com.android.application") version "$agp"',
+      );
+
+      // Android library plugin
+      content = content.replaceAll(
+        RegExp(r'id\s*\(?\s*"com\.android\.library"\s*\)?\s*version\s*".*?"'),
+        'id("com.android.library") version "$agp"',
+      );
+
+      settingsGradle.writeAsStringSync(content);
+      print("✅ Updated AGP → $agp, Kotlin → $kotlin (settings.gradle)");
+    }
+  }
+
+
+  void _updateAppGradle(String targetSdk, String ndk) {
+    final appGradle = File("android/app/build.gradle");
+    if (appGradle.existsSync()) {
+      var content = appGradle.readAsStringSync();
+
+      // compileSdk
+      content = content.replaceAll(
+        RegExp(r'compileSdk\s*=\s*\d+'),
+        'compileSdk = $targetSdk',
+      );
+
+      // targetSdk
+      content = content.replaceAll(
+        RegExp(r'targetSdk\s*=\s*\d+'),
+        'targetSdk = $targetSdk',
+      );
+
+      // ndkVersion (supports quoted/unquoted)
+      if (content.contains('ndkVersion')) {
+        content = content.replaceAll(
+          RegExp(r'ndkVersion\s*=\s*"?[\d.]+"?'),
+          'ndkVersion = "$ndk"',
+        );
       } else {
-        print("ℹ️ Skipping pod install (only available on macOS)");
+        content = content.replaceFirst(
+          RegExp(r'compileSdk\s*=\s*\d+'),
+          'ndkVersion = "$ndk"\n    compileSdk = $targetSdk',
+        );
       }
+
+      appGradle.writeAsStringSync(content);
+      print("✅ Updated compileSdk/targetSdk → $targetSdk, NDK → $ndk");
+    }
+  }
+
+  String _getFlutterVersion() {
+    try {
+      final flutterRoot = Platform.environment['FLUTTER_ROOT'];
+      final flutterExec = Platform.isWindows
+          ? '$flutterRoot\\bin\\flutter.bat'
+          : '$flutterRoot/bin/flutter';
+
+      final result = Process.runSync(flutterExec, ["--version"]);
+      if (result.exitCode == 0) {
+        return result.stdout.toString();
+      }
+    } catch (e) {
+      print("⚠️ Could not detect Flutter version automatically: $e");
+    }
+    return "";
+  }
+
+  String _resolveNdk(String targetSdk) {
+    final flutterVersion = _getFlutterVersion();
+
+    final requiredNdk = sdkMatrix[targetSdk]!["ndk"]!;
+
+    if (int.parse(targetSdk) >= 35 && flutterVersion.contains("3.32.")) {
+      print("⚠️ Flutter ${flutterVersion.trim()} does not yet support NDK $requiredNdk. Falling back to NDK 27.0.12077973 for build compatibility.");
+      return "27.0.12077973";
+    }
+
+    return requiredNdk;
+  }
+
+  /// --- IOS PART ---
+
+  void _updateIos(String iosVersion, String swiftVersion) {
+    final podfile = File("ios/Podfile");
+    if (podfile.existsSync()) {
+      var content = podfile.readAsStringSync();
+      content = content.replaceAll(
+        RegExp(r"platform :ios, '\d+(\.\d+)?'"),
+        "platform :ios, '$iosVersion'",
+      );
+      podfile.writeAsStringSync(content);
+      print("✅ Updated iOS platform → $iosVersion");
+    }
+
+    final xcodeConfig = File("ios/Runner.xcodeproj/project.pbxproj");
+    if (xcodeConfig.existsSync()) {
+      var content = xcodeConfig.readAsStringSync();
+      content = content.replaceAll(
+        RegExp(r'SWIFT_VERSION = [\d.]+;'),
+        'SWIFT_VERSION = $swiftVersion;',
+      );
+      xcodeConfig.writeAsStringSync(content);
+      print("✅ Updated Swift version → $swiftVersion");
+    }
+  }
+
+  /// --- PODS ---
+  void _runPodInstall() {
+    print("📦 Running 'pod install'...");
+    try {
+      final result = Process.runSync("pod", ["install"], workingDirectory: "ios");
+      if (result.exitCode == 0) {
+        print("✅ pod install completed");
+      } else {
+        print("❌ pod install failed: ${result.stderr}");
+      }
+    } catch (e) {
+      print("⚠️ Skipped pod install: $e");
     }
   }
 }
