@@ -1,6 +1,6 @@
 name: flutter_project_upgrader
 description: "A CLI tool to upgrade old Flutter projects (Gradle, Kotlin, iOS Podfile, etc.)"
-version: 0.0.3
+version: 0.0.4
 homepage: https://github.com/Gourav-sharma/flutter_project_upgrader
 repository: https://github.com/Gourav-sharma/flutter_project_upgrader
 issue_tracker: https://github.com/Gourav-sharma/flutter_project_upgrader/issues

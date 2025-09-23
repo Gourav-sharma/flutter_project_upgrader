@@ -9,3 +9,7 @@
 ## 0.0.3
 
 - Now it will resolve gradle version automatically
+
+## 0.0.4
+
+- Now by another command user can check if their NDK version is compatible with targetSdk

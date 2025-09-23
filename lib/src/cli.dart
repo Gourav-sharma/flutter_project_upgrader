@@ -8,11 +8,14 @@ void runCli(List<String> arguments) {
     print('''
 Commands:
   upgrade       Upgrade project versions
-  check         Print current project versions
+  check         Verify NDK / 16KB support
 
 Options (for upgrade):
   --targetSdk <version>   Upgrade using compatibility matrix (32–36)
   --pods                  Run pod install (macOS only)
+
+Options (for check):
+  --targetSdk <version>   Check NDK / 16KB support for this targetSdk
 ''');
     return;
   }
@@ -31,6 +34,19 @@ Options (for upgrade):
       final runPods = args.contains('--pods');
 
       upgrader.upgradeProject(targetSdk, updatePods: runPods);
+      break;
+
+    case 'check':
+      final args = arguments.skip(1).toList();
+
+      final targetSdkIndex = args.indexOf('--targetSdk');
+      if (targetSdkIndex == -1 || targetSdkIndex + 1 >= args.length) {
+        print('❌ Missing required --targetSdk <version> argument');
+        return;
+      }
+
+      final targetSdk = args[targetSdkIndex + 1];
+      upgrader.checkNdk(targetSdk);
       break;
 
     default:

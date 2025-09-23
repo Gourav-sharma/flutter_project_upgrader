@@ -59,6 +59,36 @@ class ProjectUpgrader {
     }
 
     print("✅ Upgrade completed for targetSdk $targetSdk.");
+
+
+  }
+
+  void checkNdk(String targetSdk) => _checkNdk(targetSdk);
+
+  void _checkNdk(String targetSdk) {
+    final expectedNdk = sdkMatrix[targetSdk]!["ndk"]!;
+    print("🔍 Checking installed NDK against required version ($expectedNdk)...");
+
+    try {
+      final result = Process.runSync("ndk-which", ["clang"]);
+      if (result.exitCode == 0) {
+        print("✅ NDK detected and is installed.");
+      } else {
+        print("❌ NDK check failed: ${result.stderr}");
+      }
+    } catch (e) {
+      print("⚠️ Could not verify NDK installation: $e");
+    }
+
+    // Optional: Check 16 KB page support
+    if (int.parse(targetSdk) >= 36) {
+      print("📏 TargetSdk $targetSdk requires 16KB page support (NDK 28+).");
+      if (expectedNdk.startsWith("28.")) {
+        print("✅ Required 16KB page size supported.");
+      } else {
+        print("⚠️ NDK version $expectedNdk may not support 16KB pages.");
+      }
+    }
   }
 
   /// --- ANDROID PART ---

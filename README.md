@@ -36,6 +36,8 @@ dev_dependencies:
 ```usage
 dart run flutter_project_upgrader upgrade --targetSdk 36 or anyother
 
+dart run flutter_project_upgrader check --targetSdk 36 
+
 target support
 32
 34
